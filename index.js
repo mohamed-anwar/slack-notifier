@@ -108,7 +108,7 @@ function buildMessage(job, build, cb) {
         messageColor = 'danger';
       }
 
-      messageBody += ` after ${jenkinsBuild.duration / 1000} sec\n`;
+      messageBody += ` after ${jenkinsBuild.duration / 1000} sec (<${jenkinsBuild.url}|Open>)\n`;
 
       if (Object.keys(authorSet) == 0) {
         messageBody += '*No changes.*\n'
