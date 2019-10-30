@@ -87,58 +87,64 @@ function resolveIds(users, cb) {
 }
 
 function buildMessage(job, build, cb) {
-  jenkins.getBuild(job, build, (err, jenkinsBuild) => {
+  jenkins.getJob(job, (err, jenkinsJob) => {
     if (err) {
-      cb(err);
-      return;
+      console.trace(err);
+      jenkinsJob = {};
     }
 
-    console.log(jenkinsBuild);
-
-    const commits = jenkinsBuild.getChangelog();
-    const authorSet = jenkinsBuild.getAuthorSet();
-
-    resolveIds(authorSet, (err, authorSet) => {
-      /* construct message body */
-      var messageColor = "";
-      var messageBody = "";
-
-      const buildNumber = 
-
-      messageBody += `${job} - #${jenkinsBuild.id}`;
-
-      if (jenkinsBuild.result == 'SUCCESS') {
-        messageBody += ' Success';
-        messageColor = 'good';
-      } else {
-        messageBody += ' Failure';
-        messageColor = 'danger';
+    jenkins.getBuild(job, build, (err, jenkinsBuild) => {
+      if (err) {
+        cb(err);
+        return;
       }
 
-      const duration = (jenkinsBuild.duration != 0? jenkinsBuild.duration : (+new Date() - jenkinsBuild.timestamp))/1000;
-      messageBody += ` after ${duration} sec (<${jenkinsBuild.url}|Open>)\n`;
+      console.log(jenkinsBuild);
 
-      if (Object.keys(authorSet) == 0) {
-        messageBody += '*No changes.*\n'
-      } else {
-        messageBody += `*Changelog*: (${commits.length} commits)\n`
+      const commits = jenkinsBuild.getChangelog();
+      const authorSet = jenkinsBuild.getAuthorSet();
 
-        Object.keys(authorSet).forEach(key => {
-          const author = authorSet[key];
+      resolveIds(authorSet, (err, authorSet) => {
+        /* construct message body */
+        var messageColor = "";
+        var messageBody = "";
 
-          messageBody += '• ';
-          messageBody += author.id? `<@${author.id}>` : author.name;
-          messageBody += ` [${author.commitsCount} commits]\n`;
-        });
-      }
+        const jobName = jenkinsJob.description? jenkinsJob.description : job;
+        messageBody += `${jobName} - #${jenkinsBuild.id}`;
 
-      /* add release notes to message body if available */
-      const releaseNotes = jenkinsBuild.getParameter('releaseNotes');
-      if (releaseNotes && releaseNotes.length > 0) {
-        messageBody += `*Release Notes*:\n${releaseNotes}\n`;
-      }
+        if (jenkinsBuild.result == 'SUCCESS') {
+          messageBody += ' Success';
+          messageColor = 'good';
+        } else {
+          messageBody += ' Failure';
+          messageColor = 'danger';
+        }
 
-      cb(null, {color: messageColor, body: messageBody});
+        const duration = (jenkinsBuild.duration != 0? jenkinsBuild.duration : (+new Date() - jenkinsBuild.timestamp))/1000;
+        messageBody += ` after ${duration} sec (<${jenkinsBuild.url}|Open>)\n`;
+
+        if (Object.keys(authorSet) == 0) {
+          messageBody += '*No changes.*\n'
+        } else {
+          messageBody += `*Changelog*: (${commits.length} commits)\n`
+
+          Object.keys(authorSet).forEach(key => {
+            const author = authorSet[key];
+
+            messageBody += '• ';
+            messageBody += author.id? `<@${author.id}>` : author.name;
+            messageBody += ` [${author.commitsCount} commits]\n`;
+          });
+        }
+
+        /* add release notes to message body if available */
+        const releaseNotes = jenkinsBuild.getParameter('releaseNotes');
+        if (releaseNotes && releaseNotes.length > 0) {
+          messageBody += `*Release Notes*:\n${releaseNotes}\n`;
+        }
+
+        cb(null, {color: messageColor, body: messageBody});
+      });
     });
   });
 }
