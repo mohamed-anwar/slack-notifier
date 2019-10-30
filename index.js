@@ -153,13 +153,13 @@ app.get('/get/:job/:build', (req, res) => {
   const job = req.params.job;
   const build = req.params.build;
 
-  buildMessage(job, build, (err, messageBody) => {
+  buildMessage(job, build, (err, message) => {
     if (err) {
       console.error(err);
       return res.status(500).end("an error occured");
     }
 
-    res.end(JSON.stringify(messageBody));
+    res.end(JSON.stringify(message));
   });
 });
 
@@ -173,12 +173,6 @@ app.get('/notify/:job/:build', (req, res) => {
       console.error(err);
       return res.status(500).end("an error occured");
     }
-
-    const options = {
-      channel: channel.startsWith('#')? channel : '#' + channel,
-      attachments: [{text: message.body, color: message.color}],
-      unfurl_links: 1,
-    };
 
     slack.send(channel, message, (err) => {
       if (err) {
