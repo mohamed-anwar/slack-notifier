@@ -93,6 +93,8 @@ function buildMessage(job, build, cb) {
       return;
     }
 
+    console.log(jenkinsBuild);
+
     const commits = jenkinsBuild.getChangelog();
     const authorSet = jenkinsBuild.getAuthorSet();
 
