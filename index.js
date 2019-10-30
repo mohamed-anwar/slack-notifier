@@ -59,6 +59,11 @@ function resolveIds(users, cb) {
               return resolve();
             }
 
+            if (!jenkinsUser.getEmail()) {
+              console.error('Jenkins did not return email for user', jenkinsUser);
+              return resolve();
+            }
+
             const jenkinsEmail = util.normalizeEmail(jenkinsUser.getEmail());
 
             if (slackUserIdCache[jenkinsEmail]) {
