@@ -115,7 +115,7 @@ function buildMessage(job, build, cb) {
         messageColor = 'danger';
       }
 
-      const duration = jenkinsBuild.duration != 0? jenkinsBuild.duration : (+new Date() - jenkinsBuild.timestamp)/1000;
+      const duration = (jenkinsBuild.duration != 0? jenkinsBuild.duration : (+new Date() - jenkinsBuild.timestamp))/1000;
       messageBody += ` after ${duration} sec (<${jenkinsBuild.url}|Open>)\n`;
 
       if (Object.keys(authorSet) == 0) {
