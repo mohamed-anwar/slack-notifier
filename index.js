@@ -9,6 +9,8 @@ const jenkinsUser    = process.env.JENKINS_USER;
 const jenkinsToken   = process.env.JENKINS_TOKEN;
 const slackToken     = process.env.SLACK_TOKEN;
 const slackWebhook   = process.env.SLACK_WEBHOOK;
+const forceChannel   = process.env.FORCE_CHANNEL;
+const defaultChannel = process.env.DEFAULT_CHANNEL;
 
 const jenkins = new Jenkins(jenkinsBaseUrl, jenkinsUser, jenkinsToken);
 const slack = new Slack(slackWebhook, slackToken);
@@ -197,7 +199,7 @@ app.get('/get/:job/:build', (req, res) => {
 app.get('/notify/:job/:build', (req, res) => {
   const job = req.params.job;
   const build = req.params.build;
-  const channel = req.query.channel || defaultChannel;
+  const channel = forceChannel || req.query.channel || defaultChannel;
 
   buildMessage(job, build, (err, message) => {
     if (err) {
