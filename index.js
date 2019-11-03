@@ -103,6 +103,21 @@ function buildMessage(job, build, cb) {
 
       const commits = jenkinsBuild.getChangelog();
       const authorSet = jenkinsBuild.getAuthorSet();
+      const startedBy = jenkinsBuild.getStartedBy();
+      var startedByInAuthorSet = false
+
+      if (startedBy && startedBy.userId) {
+        if (authorSet[startedBy.userId]) {
+          /* started by user in authorSet */
+          startedByInAuthorSet = true;
+        } else {
+          authorSet[startedBy.userId] = {
+            name: startedBy.userName,
+            email: startedBy.userId,
+            jenkinsUser: [ startedBy.uesrId ],
+          };
+        }
+      }
 
       resolveIds(authorSet, (err, authorSet) => {
         /* construct message body */
@@ -111,6 +126,19 @@ function buildMessage(job, build, cb) {
 
         const jobName = jenkinsJob.description? jenkinsJob.description : job;
         messageBody += `${jobName} - #${jenkinsBuild.id}`;
+
+        if (startedBy && startedBy.userId) {
+          const user = authorSet[startedBy.userId];
+          const userid = user && user.id? `<@${user.id}>` : user.name;
+
+          if (userid)
+            messageBody += ` by ${userid}`;
+          
+          if (!startedByInAuthorSet) {
+            /* remove startedBy from authorSet */
+            delete authorSet[startedBy.userId];
+          }
+        }
 
         if (jenkinsBuild.result == 'SUCCESS') {
           messageBody += ' Success';
@@ -126,14 +154,17 @@ function buildMessage(job, build, cb) {
         if (Object.keys(authorSet) == 0) {
           messageBody += '*No changes.*\n'
         } else {
-          messageBody += `*Changelog*: (${commits.length} commits)\n`
+          const changesUrl = `${jenkinsBaseUrl}/job/${job}/${jenkinsBuild.id}/changes/`;
+          messageBody += `*Changelog*: (<${changesUrl}|${commits.length} commits>)\n`
 
           Object.keys(authorSet).forEach(key => {
             const author = authorSet[key];
 
-            messageBody += '• ';
-            messageBody += author.id? `<@${author.id}>` : author.name;
-            messageBody += ` [${author.commitsCount} commits]\n`;
+            if (author.commitsCount > 0) {
+              messageBody += '• ';
+              messageBody += author.id? `<@${author.id}>` : author.name;
+              messageBody += ` [${author.commitsCount} commits]\n`;
+            }
           });
         }
 
