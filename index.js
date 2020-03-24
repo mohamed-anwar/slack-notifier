@@ -12,6 +12,15 @@ const slackWebhook   = process.env.SLACK_WEBHOOK;
 const forceChannel   = process.env.FORCE_CHANNEL;
 const defaultChannel = process.env.DEFAULT_CHANNEL;
 
+// dump params
+console.log('jenkinsBaseUrl', jenkinsBaseUrl);
+console.log('jenkinsUser', jenkinsUser);
+console.log('jenkinsToken', jenkinsToken);
+console.log('slackToken', slackToken);
+console.log('slackWebhook', slackWebhook);
+console.log('forceChannel', forceChannel);
+console.log('defaultChannel', defaultChannel);
+
 const jenkins = new Jenkins(jenkinsBaseUrl, jenkinsUser, jenkinsToken);
 const slack = new Slack(slackWebhook, slackToken);
 
